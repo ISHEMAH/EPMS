@@ -1,0 +1,80 @@
+// DBML (Database Markup Language) representation of the EPMS database schema
+// Generated based on JPA entity classes
+
+// Employee table
+Table employees {
+  id bigint [pk, increment]
+  code varchar [unique, not null]
+  first_name varchar [not null]
+  last_name varchar [not null]
+  email varchar [unique, not null]
+  password varchar [not null]
+  mobile varchar [unique, not null]
+  date_of_birth date
+  status varchar [not null] // ACTIVE, DISABLED
+}
+
+// Employee roles (join table for many-to-many relationship)
+Table employee_roles {
+  employee_id bigint [pk, ref: > employees.id]
+  roles varchar [pk] // ROLE_MANAGER, ROLE_ADMIN, ROLE_EMPLOYEE
+}
+
+// Employment table
+Table employments {
+  id bigint [pk, increment]
+  code varchar [unique, not null]
+  employee_id bigint [ref: > employees.id, not null]
+  department varchar [not null]
+  position varchar [not null]
+  base_salary decimal [not null]
+  status varchar [not null] // ACTIVE, INACTIVE
+  joining_date date [not null]
+}
+
+// Deduction table
+Table deductions {
+  id bigint [pk, increment]
+  code varchar [unique, not null]
+  deduction_name varchar [unique, not null]
+  percentage decimal [not null]
+  is_addition boolean [not null]
+}
+
+// Payslip table
+Table payslips {
+  id bigint [pk, increment]
+  employee_id bigint [ref: > employees.id, not null]
+  base_salary decimal [not null]
+  house_amount decimal [not null]
+  transport_amount decimal [not null]
+  employee_taxed_amount decimal [not null]
+  pension_amount decimal [not null]
+  medical_insurance_amount decimal [not null]
+  other_taxed_amount decimal [not null]
+  gross_salary decimal [not null]
+  net_salary decimal [not null]
+  month int [not null]
+  year int [not null]
+  status varchar [not null] // PENDING, PAID
+
+  indexes {
+    (employee_id, month, year) [unique]
+  }
+}
+
+// Message table
+Table messages {
+  id bigint [pk, increment]
+  employee_id bigint [ref: > employees.id, not null]
+  content text [not null]
+  month_year varchar [not null]
+  created_at timestamp [not null]
+  is_sent boolean [not null]
+}
+
+// Relationships
+Ref: employments.employee_id > employees.id
+Ref: payslips.employee_id > employees.id
+Ref: messages.employee_id > employees.id
+Ref: employee_roles.employee_id > employees.id
